@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta name="description" content="learn XSS by www.imooc.com/video/14368">
+        <title>{{ title }}</title>
+        <link rel = "stylesheet" href = "/static/css/bootstrap.css">
+        <script src="/static/js/bootstrap.js"></script>
+        <script src="/static/js/domParse.js"></script>
+        <script src="/static/js/he.js"></script>
+        <script type="text/javascript">
+            //构造解码和校正函数parse
+            var parse = (str) => {
+                var results = '';
+                try {
+                    //HTMLParse方法源于domParse.js，用于DOM parser。
+                    //he.unescape方法源于he.js，用于解码反转义
+                    HTMLParse(he.unescape(str, {strict: true}),{
+                        //start处理标签前部分，tag：标签；attrs：属性；unary：单标签为true，配对标签为false；
+                        //end处理标签后部分
+                        //chars处理标签中间文本部分
+                        //comment处理标签注释部分
+                        start: (tag,attrs,unary) => {
+                            results += '<' + tag;
+                            for(let i=0, len=attrs.length; i<len; i++) {
+                                results += " " + attrs[i].name + '="' + attrs[i].escaped + '"';
+                            }
+                            results += (unary?"/":"") + ">";
+                        },
+                        end: (tag) => {
+                            results += '</' + tag + '>';
+                        },
+                        chars: (text) => {
+                            results += text;
+                        },
+                        comment: (text) => {
+                            results += "<!--" + text + "-->";
+                        } 
+                    });
+                    return results;
+                } catch (e) {
+                    console.log(e);
+                } finally {
+
+                }
+            };
+        </script>
+    </head>
+    <body>
+        <h1 >{{ title }}</h1>
+        <p >Welcome to {{ title }}</p>
+
+        <textarea name="name" rows="8" cols="80" id="txt">
+            <p>sks <img src="null" alt="" onerror="alert(1)"></p>
+        </textarea>
+
+        <button type="button" name="button1" id="btn">评论</button>
+        <button type="button" name="button2" id="get">获取评论</button>
+        
+        <script type="text/javascript">
+            var btn = document.getElementById('btn');
+            var get = document.getElementById('get');
+            var txt = document.getElementById('txt');
+
+            //给评论按钮添加点击事件
+            btn.addEventListener('click', () => {
+                var 
+                    xhr = new XMLHttpRequest(),
+                    url = '/comment?comment=' + txt.value;
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = () => {
+                    if(xhr.readyState === 4){
+                        if(xhr.status === 200){
+                            console.log(xhr);
+                        } else {
+                            console.log('error');
+                        }
+                    }
+                }
+                xhr.send();
+            });
+
+            //给获取按钮添加点击事件
+            get.addEventListener('click', () => {
+                var 
+                    xhr = new XMLHttpRequest(),
+                    url = '/getComment';
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = () => {
+                    if(xhr.readyState === 4){
+                        if(xhr.status === 200){
+                            var com = parse(JSON.parse(xhr.response).comment);
+                            var txt = document.createElement('span');
+                            //使用innerHTML，不使用innerText：com是反转义后的编码，包含HTML标签
+                            txt.innerHTML = com;
+                            //在body的最后插入span标签
+                            document.body.appendChild(txt);
+                        } else {
+                            console.log('error');
+                        }
+                    }
+                }
+                xhr.send();
+            });
+        </script>
+
+    </body>
+</html>
