@@ -21,11 +21,16 @@
                         //end处理标签后部分
                         //chars处理标签中间文本部分
                         //comment处理标签注释部分
-                        start: (tag,attrs,unary) => {
+                        start: (tag,attrs,unary) => {\
+                            //过滤危险标签
+                            if(tag === 'script'||tag === 'style'||tag === 'link'||tag === 'ifame'||tag === 'frame') return;
                             results += '<' + tag;
+                            //过滤危险事件属性
+                            /*
                             for(let i=0, len=attrs.length; i<len; i++) {
                                 results += " " + attrs[i].name + '="' + attrs[i].escaped + '"';
                             }
+                            */
                             results += (unary?"/":"") + ">";
                         },
                         end: (tag) => {
@@ -74,7 +79,7 @@
                         if(xhr.status === 200){
                             console.log(xhr);
                         } else {
-                            console.log('error');
+                            console.log('error1');
                         }
                     }
                 }
@@ -97,7 +102,7 @@
                             //在body的最后插入span标签
                             document.body.appendChild(txt);
                         } else {
-                            console.log('error');
+                            console.log('error2');
                         }
                     }
                 }
