@@ -22,3 +22,6 @@
 	4.3 校正
 		避免直接对HTML Entity编码
 		使用DOM Parse转换，校正不配对的DOM标签
+		
+https://github.com/BlueSimle/xss.git
+https://github.com/ickedesign/XSS_WebSecurity
